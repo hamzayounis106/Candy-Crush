@@ -128,44 +128,60 @@ function App() {
     let candyBeingReplacedID = parseInt(
       candyBeingReplaced.getAttribute("data-id")
     );
+
     const BeingDragedSrc = candyBeingDragged.getAttribute("src");
     const BeingReplacedSrc = candyBeingReplaced.getAttribute("src");
     const regex = /\/(.*?)\.png/;
     const matchD = BeingDragedSrc.match(regex);
     const matchR = BeingReplacedSrc.match(regex);
-    candyArrangement[candyBeingReplacedID] = matchD[1];
-    candyArrangement[candyBeingDraggedID] = matchR[1];
 
-    const isFourColumn = columnFourMatch();
-    const isThreeColumn = columnThreeMatch();
-    const isThreeRow = rowThreeMatch(threeRowNeglater);
-    const isFourRow = rowFourMatch(fourRowNeglater);
-
+    // Calculate valid moves
     const validMoves = [
       candyBeingDraggedID - 1,
       candyBeingDraggedID - width,
       candyBeingDraggedID + 1,
       candyBeingDraggedID + width,
     ];
+
     const isMoveValid = validMoves.includes(candyBeingReplacedID);
-    if (isMoveValid && (isFourColumn || isFourRow)) {
-      setScore(score + 4);
-    }
-    if (isMoveValid && (isThreeColumn || isThreeRow)) {
-      setScore(score + 3);
-    }
-    if (
-      isMoveValid &&
-      (isFourColumn || isThreeColumn || isThreeRow || isFourRow)
-    ) {
-      setCandyArrangement([...candyArrangement]);
+
+    if (isMoveValid) {
+      // Swap the candies
+      candyArrangement[candyBeingReplacedID] = matchD[1];
+      candyArrangement[candyBeingDraggedID] = matchR[1];
+
+      const isFourColumn = columnFourMatch();
+      const isThreeColumn = columnThreeMatch();
+      const isThreeRow = rowThreeMatch(threeRowNeglater);
+      const isFourRow = rowFourMatch(fourRowNeglater);
+
+      if (isFourColumn || isFourRow) {
+        setScore(score + 4);
+      }
+      if (isThreeColumn || isThreeRow) {
+        setScore(score + 3);
+      }
+
+      if (
+        isFourColumn || isThreeColumn || isThreeRow || isFourRow
+      ) {
+        setCandyArrangement([...candyArrangement]);
+      } else {
+        // Revert the swap if no match is found
+        candyArrangement[candyBeingReplacedID] = matchR[1];
+        candyArrangement[candyBeingDraggedID] = matchD[1];
+        setCandyArrangement([...candyArrangement]);
+      }
     } else {
+      // If move is not valid, revert back to original position
       candyArrangement[candyBeingReplacedID] = matchR[1];
       candyArrangement[candyBeingDraggedID] = matchD[1];
       setCandyArrangement([...candyArrangement]);
     }
+
     setDragging(false);
   };
+
 
   useEffect(() => {
     const timer = setInterval(() => {
